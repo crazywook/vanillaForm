@@ -1,22 +1,15 @@
 var wrapFetch = {
   request: function (url, options) {
-
+    var baseUrl = process.env.API_BASE_URL;
+    var fullUrl = baseUrl + url;
     if (options.body && options.method === 'POST') {
       options.body = JSON.stringify(options.body);
     }
 
     return fetch(
-      url,
+      fullUrl,
       options
     ).then(r => {
-      return new Promise(function (resolve, reject) {
-
-        r.json().then(function (r) {
-          resolve(r.result);
-        }).catch(function (e) {
-          reject(e);
-        });
-      });
     });
   },
   post: function (url, data) {
@@ -27,6 +20,7 @@ var wrapFetch = {
           'Content-Type': 'application/json'
         },
         credentials: 'include',
+        withCredentials: true,
         method: 'POST',
         body: data
       }
@@ -65,6 +59,10 @@ function FormComponent(formMeta, state) {
 
   if (!_this.form) {
     throw new Error('form: ' + formMeta.formName + ' does not exist');
+  }
+
+  if (!state) {
+    throw new Error('state parameter does not exist');
   }
 
   console.info(formMeta.formName, 'form component will created');
@@ -125,7 +123,6 @@ function FormComponent(formMeta, state) {
 
     e.preventDefault();
     _this.state[e.target.name] = _this.parseElmValue(e.target.name, e.target.value);
-    console.log('_this.state[e.target.name]', _this.state[e.target.name]);
     e.target.value = _this.formatInputValue(e.target.name, e.target.value);
     // 동일 데이터가 반복 표시 되는 것은 따로 처리 => displaySameData
     var nextState = _this.calculateState(_this.state);
@@ -169,7 +166,7 @@ FormComponent.prototype.renderData = function renderData(state) {
   // }.bind(this));
 };
 FormComponent.prototype.calculateState = function calculateState(state) {
-  console.log('calculateState', state);
+  // console.log('calculateState', state);
   return state;
 };
 FormComponent.prototype.formatInputValue = function formatInputValue(name, value) {
@@ -210,6 +207,10 @@ FormComponent.prototype.getStateType = function getStateType(name, value) {
 };
 FormComponent.prototype.parseElmValue = function parseElmValue(name, value) {
 
+  if (!this.stateType) {
+    return value;
+  }
+
   var type = this.stateType[name];
   if (this.FormParser[type]) {
     return this.FormParser[type](value);
@@ -244,7 +245,7 @@ FormComponent.prototype.setEditable = function setEditable(isEditable) {
 /**
  * @returns {{}}
  */
-FormComponent.prototype.takeFieldElms = function takeFieldElms(isEditable) {
+FormComponent.prototype.takeFieldElms = function takeFieldElms() {
   let fieldElms = {};
   this.qsAll('[name]').forEach(elm => {
     fieldElms[elm.getAttribute('name')] = elm;
