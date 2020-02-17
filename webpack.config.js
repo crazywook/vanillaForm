@@ -1,14 +1,28 @@
-const path = require('path');
+const dotenv = require('dotenv');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
+const webpack = require('webpack');
 
 const baseDir = path.resolve(__dirname, 'src');
 const distRoot = path.resolve('public');
 const sourceFilepath = path.resolve(baseDir, 'example/template.html');
 
+dotenv.config();
+
 const htmlWebpackPlugin = new HtmlWebpackPlugin({
   template: sourceFilepath,
   filename: 'index.html',
   hash: true,
+});
+
+const {
+  API_BASE_URL
+} = process.env;
+
+console.log('process.env.API_BASE_URL', API_BASE_URL);
+
+const environmentPlugin = new webpack.EnvironmentPlugin({
+  API_BASE_URL,
 });
 
 module.exports = {
@@ -25,13 +39,11 @@ module.exports = {
   },
   module: {
     rules: [
-      {
-        test: /\.html$/i,
-        loader: 'html-loader',
-      },
+
     ]
   },
   plugins: [
     htmlWebpackPlugin,
+    environmentPlugin,
   ]
 };
