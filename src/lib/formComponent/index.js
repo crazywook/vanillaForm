@@ -52,10 +52,14 @@ function promiseAllAjaxAdaptor(url, options) {
  * }} formMeta
  * @param {{}} state
  */
-function FormComponent(formMeta, state) {
+function FormComponent(formMeta) {
   // eslint-disable-next-line no-use-before-define
   var _this = this;
+  var state = formMeta.state;
   _this.form = document[formMeta.formName];
+  if (!this) {
+    throw new Error('FormComponent must created by constructor');
+  }
 
   if (!_this.form) {
     throw new Error('form: ' + formMeta.formName + ' does not exist');
@@ -67,6 +71,7 @@ function FormComponent(formMeta, state) {
 
   console.info(formMeta.formName, 'form component will created');
   _this.state = state;
+  _this.stateType = formMeta.stateType;
   _this.stateKeys = Object.keys(state);
   _this.CustomFormParser = {
     // TODO: add custom parser
@@ -86,6 +91,8 @@ function FormComponent(formMeta, state) {
   _this.qsAll = _this.form.querySelectorAll.bind(_this.form);
   _this.fieldElms = _this.takeFieldElms(_this.form);
   _this.setStateByForm(_this.form);
+  _this.state = _this.calculateState(_this.state);
+  _this.renderData(_this.state);
   _this.formState = {
     isEditable: true
   };
@@ -122,10 +129,13 @@ function FormComponent(formMeta, state) {
   _this.form.addEventListener('keyup', function (e) {
 
     e.preventDefault();
-    _this.state[e.target.name] = _this.parseElmValue(e.target.name, e.target.value);
+    var stateValue = _this.parseElmValue(e.target.name, e.target.value);
     e.target.value = _this.formatInputValue(e.target.name, e.target.value);
     // 동일 데이터가 반복 표시 되는 것은 따로 처리 => displaySameData
-    var nextState = _this.calculateState(_this.state);
+    var nextState = _this.calculateState({
+      ..._this.state,
+      [e.target.name]: stateValue,
+    });
     _this.setState(
       nextState,
       function (state) {
@@ -173,6 +183,10 @@ FormComponent.prototype.formatInputValue = function formatInputValue(name, value
   if (this.FormatterByName[name]) {
     return this.FormatterByName[name](value);
   }
+  var type = this.stateType[name];
+  if (type) {
+    return type.renderState(value);
+  }
   return value;
 };
 FormComponent.prototype.mount = function mount() {
@@ -190,6 +204,7 @@ FormComponent.prototype.getState = function getState() {
  */
 FormComponent.prototype.setState = function setState(state, callback) {
   this.state = state;
+  console.log('state', this.state);
   callback && callback(state);
 };
 FormComponent.prototype.getValueByElm = function getValueByElm(elm) {
@@ -210,19 +225,24 @@ FormComponent.prototype.parseElmValue = function parseElmValue(name, value) {
   if (!this.stateType) {
     return value;
   }
-
   var type = this.stateType[name];
+  if (!type) {
+    return value;
+  }
   if (this.FormParser[type]) {
     return this.FormParser[type](value);
   }
+
   var typeString = type.toString();
   if (typeString.startsWith('class')) {
     console.warn('parsing by class is not supported');
     return value;
   };
   if (typeString.startsWith('function')) {
-    console.warn('parsing by class is not supported');
-    return value;
+    return type(value);
+  };
+  if (typeof type === 'object' && Object.keys(type).includes('enstate', 'renderState')) {
+    return type.enstate(value);
   };
   return value;
 };
