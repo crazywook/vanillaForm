@@ -46,10 +46,17 @@ function promiseAllAjaxAdaptor(url, options) {
 }
 
 /**
- * @param {{
+ * 
+ * @typedef {{
  *  formName: string
  *  submitUrl: string
- * }} formMeta
+ *  state: {}
+ *  stateType: {}
+ * }} FormMeta 
+ */
+
+/**
+ * @param {FormMeta} formMeta
  * @param {{}} state
  */
 function FormComponent(formMeta) {
