@@ -5,7 +5,7 @@ const webpack = require('webpack');
 
 const baseDir = path.resolve(__dirname, 'src');
 const distRoot = path.resolve('public');
-const sourceFilepath = path.resolve(baseDir, 'example/template.html');
+const sourceFilepath = path.resolve(baseDir, 'example/limitConfig/template.html');
 
 dotenv.config();
 
@@ -30,7 +30,7 @@ module.exports = {
   devtool: 'eval',
   entry: {
     app: [
-      './src/example/discountPercent',
+      './src/example/limitConfig',
     ]
   },
   output: {
