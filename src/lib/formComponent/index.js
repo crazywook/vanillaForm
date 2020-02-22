@@ -80,6 +80,7 @@ function FormComponent(formMeta) {
   _this.state = state;
   _this.stateType = formMeta.stateType;
   _this.stateKeys = Object.keys(state);
+  _this.computeState = formMeta.computeState;
   _this.CustomFormParser = {
     // TODO: add custom parser
   };
@@ -98,7 +99,7 @@ function FormComponent(formMeta) {
   _this.qsAll = _this.form.querySelectorAll.bind(_this.form);
   _this.fieldElms = _this.takeFieldElms(_this.form);
   _this.setStateByForm(_this.form);
-  _this.state = _this.calculateState(_this.state);
+  _this.state = _this.computeState(_this.state);
   _this.renderData(_this.state);
   _this.formState = {
     isEditable: true
@@ -133,43 +134,43 @@ function FormComponent(formMeta) {
     console.log('submit', e);
     e.preventDefault();
   });
+  _this.form.addEventListener('keydown', function (e) {
+    // e.preventDefault();
+    console.log('key down', e.target.name);
+  });
   _this.form.addEventListener('keyup', function (e) {
-
-    e.preventDefault();
-    var stateValue = _this.parseElmValue(e.target.name, e.target.value);
-    e.target.value = _this.formatInputValue(e.target.name, e.target.value);
-    // 동일 데이터가 반복 표시 되는 것은 따로 처리 => displaySameData
-    var nextState = _this.calculateState({
-      ..._this.state,
-      [e.target.name]: stateValue,
-    });
-    _this.setState(
-      nextState,
-      function (state) {
-        _this.renderData(state);
-      }
-    );
-    // displaySameData(limitInputs);
+    console.log('key up', e.target.name, ':', e.target.value);
+    _this.handleFormChange(e);
   });
   _this.form.addEventListener('change', function (e) {
-
-    e.preventDefault();
     console.log('change', e.target.value);
-    _this.state[e.target.name] = _this.parseElmValue(e.target.name, e.target.value);
-    // 동일 데이터가 반복 표시 되는 것은 따로 처리 => displaySameData
-    var nextState = _this.calculateState(_this.state);
-    _this.setState(
-      nextState,
-      function (state) {
-        _this.renderData(state);
-      }
-    );
+    _this.handleFormChange(e);
     // displaySameData(limitInputs);
-
   });
 
   _this.mount();
 }
+FormComponent.prototype.handleFormChange = function handleFormChange(e) {
+  var name = e.target.name;
+  var value = e.target.value;
+  var stateValue = this.parseElmValue(name, value);
+  console.log('stateValue', stateValue);
+  var formattedValue = this.formatInputValue(name, value);
+  console.log('prev', this.state[name], 'curr', formattedValue);
+  e.target.value = formattedValue instanceof Error
+    ? this.state[name]
+    : formattedValue;
+
+  this.setState(
+    {
+      [name]: stateValue,
+    },
+    this.renderData.bind(this)
+  );
+  // 동일 데이터가 반복 표시 되는 것은 따로 처리 => displaySameData
+  // displaySameData(limitInputs);
+  e.preventDefault();
+};
 FormComponent.prototype.renderData = function renderData(state) {
   console.warn('renderData was not overridden');
   // this.stateKeys.forEach(function (key) {
@@ -182,8 +183,8 @@ FormComponent.prototype.renderData = function renderData(state) {
   // 	}
   // }.bind(this));
 };
-FormComponent.prototype.calculateState = function calculateState(state) {
-  // console.log('calculateState', state);
+FormComponent.prototype.computeState = function computeState(state) {
+  // console.log('computeState', state);
   return state;
 };
 FormComponent.prototype.formatInputValue = function formatInputValue(name, value) {
@@ -191,6 +192,8 @@ FormComponent.prototype.formatInputValue = function formatInputValue(name, value
     return this.FormatterByName[name](value);
   }
   var type = this.stateType[name];
+  // console.log('value', value);
+  // console.log('type', type);
   if (type) {
     return type.renderState(value);
   }
@@ -210,9 +213,17 @@ FormComponent.prototype.getState = function getState() {
  * @param {function(state)} callback
  */
 FormComponent.prototype.setState = function setState(state, callback) {
-  this.state = state;
+  this.state = this.computeState
+    ? this.computeState({
+      ...this.state,
+      ...state
+    })
+    : {
+      ...this.state,
+      state
+    };
   console.log('state', this.state);
-  callback && callback(state);
+  callback && callback(this.state);
 };
 FormComponent.prototype.getValueByElm = function getValueByElm(elm) {
 
@@ -239,7 +250,6 @@ FormComponent.prototype.parseElmValue = function parseElmValue(name, value) {
   if (this.FormParser[type]) {
     return this.FormParser[type](value);
   }
-
   var typeString = type.toString();
   if (typeString.startsWith('class')) {
     console.warn('parsing by class is not supported');
@@ -249,7 +259,12 @@ FormComponent.prototype.parseElmValue = function parseElmValue(name, value) {
     return type(value);
   };
   if (typeof type === 'object' && Object.keys(type).includes('enstate', 'renderState')) {
-    return type.enstate(value);
+    var enstated = type.enstate(value);
+    if (enstated instanceof Error) {
+      console.log('enstate error', value);
+      return this.state[name];
+    }
+    return enstated;
   };
   return value;
 };
