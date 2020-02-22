@@ -57,16 +57,14 @@ _Currency.prototype.enstate = function (value) {
   }
   var number = Number(value.replace(/[^0-9]/g, ''));
   var validation = this.max && this.validateMaxNum(number);
-  console.log('validation', validation, '/', value);
   if (validation instanceof Error) {
     return validation;
   }
-  console.log('number', number);
   return number;
 };
 _Currency.prototype.renderState = function (value) {
   var state = this.enstate(value);
-  return state instanceof Errorqw
+  return state instanceof Error
     ? state
     : state.toLocaleString();
 };

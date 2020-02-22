@@ -62,7 +62,6 @@ LimitConfig.prototype.renderData = function renderData(state) {
     }
 
     var formattedValue = formatter ? formatter(this.state[name]) : this.state[name];
-    !formattedValue && console.log('renderdata', name, formattedValue);
     if (hasValue) {
       elm.value = formattedValue;
     } else {
@@ -99,7 +98,7 @@ new LimitConfig({
     properEstimatedBorrowingAmt: Currency(),
     properInterestLiability: Currency(),
     noneInterestLiability: Currency(),
-    salesActivityCashFlow: Currency(1000),
+    salesActivityCashFlow: Currency(100000),
     properInterestCompensationMagnification: Currency(),
     properBorrowingInterestRate: Currency(),
     paymentGuaranteeBalancePastYear: Currency(),

@@ -214,14 +214,8 @@ FormComponent.prototype.getState = function getState() {
  */
 FormComponent.prototype.setState = function setState(state, callback) {
   this.state = this.computeState
-    ? this.computeState({
-      ...this.state,
-      ...state
-    })
-    : {
-      ...this.state,
-      state
-    };
+    ? this.computeState(Object.assign({}, this.state, state))
+    : Object.assign({}, this.state, state);
   console.log('state', this.state);
   callback && callback(this.state);
 };
