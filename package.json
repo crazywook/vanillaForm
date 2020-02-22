@@ -1,11 +1,11 @@
 {
   "name": "vanilla-form",
-  "version": "1.0.0",
+  "version": "0.1.2",
   "description": "순수js로 Form 데이타 바인딩을 편하게 할 수 있는 라이브러리를 만들어 본다.",
   "main": "index.js",
   "scripts": {
     "build": "webpack",
-    "build:watch": "webpack --watch",
+    "build:watch": "NODE_ENV=development webpack --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,5 +24,8 @@
     "html-webpack-plugin": "^3.2.0",
     "webpack": "^4.41.6",
     "webpack-cli": "^3.3.11"
+  },
+  "dependencies": {
+    "dotenv": "^8.2.0"
   }
 }
