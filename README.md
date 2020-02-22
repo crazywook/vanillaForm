@@ -13,6 +13,10 @@ SSR인데 따로 또 script부분에 template을 가지고 있는 것도 어색�
 차후 typescript 버전을 만들면서 template단위로 업뎃하는 방식으로 바꿔 볼 것이다.
 
 # TODO
-좀 더 복잡한 데이터 바인딩 폼을 만들고 테스트 해본다.
-1. 기업의 대출 한도 설정 계산 폼을 만들어 본다.
-  - 계산한 결과 같이 name말고 id에도 적절히 바인딩 되는지 확인한다.
+- [] renderData 함수를 formComponent에 추상화해서 구현한다.
+- [] validation type으로 Float 구현
+- [] validation string max 구현
+# release
+- 0.1.2 (2020-2-22)
+  기업의 대출 한도 설정 계산 폼 예제
+  valueTransformer number max체크 구현
