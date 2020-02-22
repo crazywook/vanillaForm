@@ -13,9 +13,10 @@ SSR인데 따로 또 script부분에 template을 가지고 있는 것도 어색�
 차후 typescript 버전을 만들면서 template단위로 업뎃하는 방식으로 바꿔 볼 것이다.
 
 # TODO
-- [] renderData 함수를 formComponent에 추상화해서 구현한다.
-- [] validation type으로 Float 구현
-- [] validation string max 구현
+* [ ] renderData 함수를 formComponent에 추상화해서 구현한다.
+* [ ] validation type으로 Float 구현
+* [ ] validation string max 구현
+
 # release
 - 0.1.2 (2020-2-22)
   기업의 대출 한도 설정 계산 폼 예제
